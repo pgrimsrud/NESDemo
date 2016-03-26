@@ -97,6 +97,37 @@ void ppudisable(void)
     *((unsigned char*)0x2001) = 0x00;
 }
 
+void apuinit(void)
+{
+    // Initialize the APU to a known basic state
+    *((unsigned char*)0x4015) = 0x0F;
+
+    *((unsigned char*)0x4000) = 0x30;
+    *((unsigned char*)0x4001) = 0x08;
+    *((unsigned char*)0x4002) = 0x00;
+    *((unsigned char*)0x4003) = 0x00;
+    *((unsigned char*)0x4004) = 0x30;
+    *((unsigned char*)0x4005) = 0x08;
+    *((unsigned char*)0x4006) = 0x00;
+    *((unsigned char*)0x4007) = 0x00;
+    *((unsigned char*)0x4008) = 0x80;
+    *((unsigned char*)0x4009) = 0x00;
+    *((unsigned char*)0x400A) = 0x00;
+    *((unsigned char*)0x400B) = 0x00;
+    *((unsigned char*)0x400C) = 0x30;
+    *((unsigned char*)0x400D) = 0x00;
+    *((unsigned char*)0x400E) = 0x00;
+    *((unsigned char*)0x400F) = 0x00;
+    *((unsigned char*)0x4010) = 0x00;
+    *((unsigned char*)0x4011) = 0x00;
+    *((unsigned char*)0x4012) = 0x00;
+    *((unsigned char*)0x4013) = 0x00;
+    *((unsigned char*)0x4014) = 0x00;
+    *((unsigned char*)0x4015) = 0x0F;
+    *((unsigned char*)0x4016) = 0x00;
+    *((unsigned char*)0x4017) = 0x40;
+}
+
 void palattes(void)
 {
     // Background 0
@@ -330,11 +361,32 @@ void update_sprites(void)
     }
     if(gController1 & C1_A)
     {
-        *((unsigned char*)0x2000) = 0x89;
+        //raw period = 111860.8/frequency - 1
+        
+        // Make a sound
+        
+        // raw period
+        *((unsigned char*)0x4003) = 0x01;
+        *((unsigned char*)0x4002) = 0x17;
+        // duty cycle and volume
+        *((unsigned char*)0x4000) = 0xBF;
     }
     if(gController1 & C1_B)
     {
-        *((unsigned char*)0x2000) = 0x88;
+        //raw period = 111860.8/frequency - 1
+        
+        // Make a different sound
+      
+        // raw period
+        *((unsigned char*)0x4003) = 0x01;
+        *((unsigned char*)0x4002) = 0x73;
+        // duty cycle and volume
+        *((unsigned char*)0x4000) = 0xBF;
+    }
+    if(!((gController1 & C1_A) || (gController1 & C1_B)))
+    {
+        // Stop making the sound
+        *((unsigned char*)0x4000) = 0x30;
     }
         
     
@@ -367,6 +419,8 @@ void main(void)
     palattes();
     nametables();
     sprites();
+    
+    apuinit();
     
     ppuinit();
     
