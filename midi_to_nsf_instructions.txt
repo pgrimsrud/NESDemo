@@ -1,0 +1,26 @@
+How to convert midi to nsf.
+
+1. run midmml -config test.mmc test.mid
+   this will convert to a .mml
+2. in the mck workspace edit the following
+   build.bat
+   make_nsf.txt
+       edit the include at the bottom with the proper name
+       edit the song/composer
+3. run build.bat to get your test.nsf
+
+needed tools:
+
+midimml - a tool to convert midi to mml
+
+a workspace with the following unzipped into one dir:
+
+mck
+mckc
+dmc converter
+nesasm_x64
+
+To get a super basic midi to play with I used the following:
+http://www.mobilefish.com/services/midi_maker/midi_maker.php
+enter RTTTL code and tell it to make a midi
+use the MidiType program to convert to type 1

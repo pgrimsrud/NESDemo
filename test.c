@@ -1,3 +1,5 @@
+//#include "main.asm"
+
 #define C1_A 0x80
 #define C1_B 0x40
 #define C1_s 0x20
@@ -16,6 +18,12 @@ static unsigned char gXScroll;
 static unsigned char gYScroll;
 static unsigned char gXNametable;
 static unsigned char devnull;
+
+extern void pMusicInit(unsigned char);
+extern void pMusicPlay(void);
+
+//void (* pMusicInit)(void);
+//void (* pMusicPlay)(void);
 
 #pragma bss-name (pop)
 
@@ -248,6 +256,8 @@ void sprites(void)
     gXScroll = 0;
     gYScroll = 0;
     gXNametable = 0;
+    
+    
 }
 
 void dma_sprites(void)
@@ -359,6 +369,22 @@ void update_sprites(void)
             }
         }
     }
+    if(gController1 & C1_B)
+    {
+        ////raw period = 111860.8/frequency - 1
+        //
+        //// Make a different sound
+        //
+        //// raw period
+        //*((unsigned char*)0x4003) = 0x01;
+        //*((unsigned char*)0x4002) = 0x73;
+        //// duty cycle and volume
+        //*((unsigned char*)0x4000) = 0xBF;
+        
+        // Play the music
+        pMusicPlay();
+        
+    }
     if(gController1 & C1_A)
     {
         //raw period = 111860.8/frequency - 1
@@ -371,22 +397,10 @@ void update_sprites(void)
         // duty cycle and volume
         *((unsigned char*)0x4000) = 0xBF;
     }
-    if(gController1 & C1_B)
-    {
-        //raw period = 111860.8/frequency - 1
-        
-        // Make a different sound
-      
-        // raw period
-        *((unsigned char*)0x4003) = 0x01;
-        *((unsigned char*)0x4002) = 0x73;
-        // duty cycle and volume
-        *((unsigned char*)0x4000) = 0xBF;
-    }
     if(!((gController1 & C1_A) || (gController1 & C1_B)))
     {
         // Stop making the sound
-        *((unsigned char*)0x4000) = 0x30;
+        //*((unsigned char*)0x4000) = 0x30;
     }
         
     
@@ -422,6 +436,14 @@ void main(void)
     
     apuinit();
     
+    pMusicInit(0x1);
+    
+    vblank();
+    vblank();
+    vblank();
+    vblank();
+    vblank();
+
     ppuinit();
     
     while(1)
@@ -435,6 +457,7 @@ void main(void)
         dma_sprites();
         
         scroll_right();
+        
     }
 }
 
