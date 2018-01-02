@@ -1,1 +1,1 @@
-C:\Users\phil\NES\cc65\bin\cl65.exe -t nes main.asm test.c --mapfile test.map -o test.nes
+cl65 -t nes main.asm test.c --mapfile test.map -o test.nes
