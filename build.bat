@@ -1,1 +1,4 @@
-cl65 -t nes main.asm test.c --mapfile test.map -o test.nes
+C:\Users\pgrimsrud\NES\cc65\bin\cc65 -Oi test.c -o test.asm --add-source
+C:\Users\pgrimsrud\NES\cc65\bin\ca65 test.asm
+C:\Users\pgrimsrud\NES\cc65\bin\ca65 main.asm
+C:\Users\pgrimsrud\NES\cc65\bin\ld65 -C nes.cfg -o test.nes main.o test.o --mapfile test.map "C:\Users\pgrimsrud\NES\cc65\lib\nes.lib"
