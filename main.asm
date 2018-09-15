@@ -18,7 +18,7 @@
 .byte $4E, $45, $53, $1A ; "NES" EOF
 .byte $01                ; PRG ROM size (16 KiB units)
 .byte $01                ; CHR ROM size (8 KiB units)
-.byte $01                ; vertical mirroring
+.byte $00                ; horizontal mirroring
 .byte $00                ; mapper 0000 (NROM)
 .byte $00                ; PRG RAM size (8 KiB units)
 .byte $00                ; NTSC
