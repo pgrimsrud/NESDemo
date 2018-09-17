@@ -30,6 +30,7 @@ static unsigned char gXNametableScreen;
 static unsigned char gYNametable;
 static unsigned char devnull;
 static unsigned int  i;
+static unsigned int  gVelocity;
 //static unsigned int  j;
 //static unsigned long offset;
 static unsigned char ppu_row;
@@ -438,6 +439,7 @@ void sprites(void)
     
     gX = 0x50;
     gY = 0x4F;
+    gVelocity = 0;
     gXScroll = 0;
     gYScroll = 0;
     gYNametable = 2;
@@ -597,34 +599,30 @@ void update_sprites(void)
         }
         else
         {
-            if( gYNametable == 2 )
+            if( gYScroll != 0x0 || gYNametable == 0 )
             {
-                if( nametable[0x3C0 + (((gY+0x11)&0xF8) << 2) + ((gX) >> 3)] == 0x6 &&
-                    nametable[0x3C0 + (((gY+0x11)&0xF8) << 2) + ((gX+0xF) >> 3)] == 0x6 )
+                if((gYScroll + gY + 0x11) >= 0xF0)
                 {
-                    gYNametable = 2;
-                    gYScroll = 0x0;
-                }
-            }
-            else
-            {
-                if( gYScroll != 0x0)
-                {
-                    if((gYScroll + gY + 0x11) >= 0xF0)
+                    if( nametable[0x3C0 + (((gYScroll + gY + 0x11 - 0xF0) & 0xF8) << 2) + ((gX) >> 3)] == 0x6 &&
+                        nametable[0x3C0 + (((gYScroll + gY + 0x11 - 0xF0) & 0xF8) << 2) + ((gX+0xF) >> 3)] == 0x6 )
                     {
-                        if( nametable[0x3C0 + (((gYScroll + gY + 0x11 - 0xF0) & 0xF8) << 2) + ((gX) >> 3)] == 0x6 &&
-                            nametable[0x3C0 + (((gYScroll + gY + 0x11 - 0xF0) & 0xF8) << 2) + ((gX+0xF) >> 3)] == 0x6 )
+                        if( gYScroll == 0xEF )
+                        {
+                            gYNametable = 2;
+                            gYScroll = 0x0;
+                        }
+                        else
                         {
                             gYScroll += 1;
                         }
                     }
-                    else
+                }
+                else
+                {
+                    if( nametable[(((gYScroll + gY+0x11) & 0xF8) << 2) + ((gX) >> 3)] == 0x6 &&
+                        nametable[(((gYScroll + gY+0x11) & 0xF8) << 2) + ((gX+0xF) >> 3)] == 0x6 )
                     {
-                        if( nametable[(((gYScroll + gY+0x11) & 0xF8) << 2) + ((gX) >> 3)] == 0x6 &&
-                            nametable[(((gYScroll + gY+0x11) & 0xF8) << 2) + ((gX+0xF) >> 3)] == 0x6 )
-                        {
-                            gYScroll += 1;
-                        }
+                        gYScroll += 1;
                     }
                 }
             }
@@ -761,6 +759,8 @@ void update_sprites(void)
         // Stop making the sound
         //*((unsigned char*)0x4000) = 0x30;
     }
+    
+    
         
     
     *((unsigned char*)0x200) = gY;
