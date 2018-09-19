@@ -31,6 +31,7 @@ static unsigned char gYNametable;
 static unsigned char devnull;
 static unsigned int  i;
 static unsigned int  gVelocity;
+static unsigned int  gVelocityDirection;
 //static unsigned int  j;
 //static unsigned long offset;
 static unsigned char ppu_row;
@@ -440,6 +441,7 @@ void sprites(void)
     gX = 0x50;
     gY = 0x4F;
     gVelocity = 0;
+    gVelocityDirection = 0;
     gXScroll = 0;
     gYScroll = 0;
     gYNametable = 2;
@@ -500,133 +502,9 @@ void update_sprites(void)
 {
     if(gController1 & C1_U)
     {
-        if(gY > 0x0F)
-        {
-            if( gYNametable == 2 )
-            {
-                if( nametable[0x3C0 + (((gY)&0xF8) << 2) + ((gX) >> 3)] == 0x6 &&
-                    nametable[0x3C0 + (((gY)&0xF8) << 2) + ((gX+0xF) >> 3)] == 0x6 )
-                {
-                    gY -= 1;
-                }
-            }
-            else
-            {
-                if((gYScroll + gY) >= 0xF0)
-                {
-                    if( nametable[0x3C0 + (((gYScroll + gY - 0xF0) & 0xF8) << 2) + ((gX) >> 3)] == 0x6 &&
-                        nametable[0x3C0 + (((gYScroll + gY - 0xF0) & 0xF8) << 2) + ((gX+0xF) >> 3)] == 0x6 )
-                    {
-                        gY -= 1;
-                    }
-                }
-                else
-                {
-                    if( nametable[(((gYScroll + gY) & 0xF8) << 2) + ((gX) >> 3)] == 0x6 &&
-                        nametable[(((gYScroll + gY) & 0xF8) << 2) + ((gX+0xF) >> 3)] == 0x6 )
-                    {
-                        gY -= 1;
-                    }
-                }
-            }
-        }
-        else
-        {
-            if( gYNametable == 2 )
-            {
-                if( nametable[0x3C0 + (((gY)&0xF8) << 2) + ((gX) >> 3)] == 0x6 &&
-                    nametable[0x3C0 + (((gY)&0xF8) << 2) + ((gX+0xF) >> 3)] == 0x6 )
-                {
-                    gYNametable = 0;
-                    gYScroll = 0xEF;
-                }
-            }
-            else
-            {
-                if( gYScroll != 0x0)
-                {
-                    if((gYScroll + gY) >= 0xF0)
-                    {
-                        if( nametable[0x3C0 + (((gYScroll + gY - 0xF0) & 0xF8) << 2) + ((gX) >> 3)] == 0x6 &&
-                            nametable[0x3C0 + (((gYScroll + gY - 0xF0) & 0xF8) << 2) + ((gX+0xF) >> 3)] == 0x6 )
-                        {
-                            gYScroll -= 1;
-                        }
-                    }
-                    else
-                    {
-                        if( nametable[(((gYScroll + gY) & 0xF8) << 2) + ((gX) >> 3)] == 0x6 &&
-                            nametable[(((gYScroll + gY) & 0xF8) << 2) + ((gX+0xF) >> 3)] == 0x6 )
-                        {
-                            gYScroll -= 1;
-                        }
-                    }
-                }
-            }
-        }
     }
     if(gController1 & C1_D)
     {
-        if(gY < 0xCF)
-        {
-            if( gYNametable == 2 )
-            {
-                if( nametable[0x3C0 + (((gY+0x11)&0xF8) << 2) + ((gX) >> 3)] == 0x6 &&
-                    nametable[0x3C0 + (((gY+0x11)&0xF8) << 2) + ((gX+0xF) >> 3)] == 0x6 )
-                {
-                    gY += 1;
-                }
-            }
-            else
-            {
-                if((gYScroll + gY + 0x11) >= 0xF0)
-                {
-                    if( nametable[0x3C0 + (((gYScroll + (gY+0x11) - 0xF0) & 0xF8) << 2) + ((gX) >> 3)] == 0x6 &&
-                        nametable[0x3C0 + (((gYScroll + (gY+0x11) - 0xF0) & 0xF8) << 2) + ((gX+0xF) >> 3)] == 0x6 )
-                    {
-                        gY += 1;
-                    }
-                }
-                else
-                {
-                    if( nametable[(((gYScroll + gY + 0x11) & 0xF8) << 2) + ((gX) >> 3)] == 0x6 &&
-                        nametable[(((gYScroll + gY + 0x11) & 0xF8) << 2) + ((gX+0xF) >> 3)] == 0x6 )
-                    {
-                        gY += 1;
-                    }
-                }
-            }
-        }
-        else
-        {
-            if( gYScroll != 0x0 || gYNametable == 0 )
-            {
-                if((gYScroll + gY + 0x11) >= 0xF0)
-                {
-                    if( nametable[0x3C0 + (((gYScroll + gY + 0x11 - 0xF0) & 0xF8) << 2) + ((gX) >> 3)] == 0x6 &&
-                        nametable[0x3C0 + (((gYScroll + gY + 0x11 - 0xF0) & 0xF8) << 2) + ((gX+0xF) >> 3)] == 0x6 )
-                    {
-                        if( gYScroll == 0xEF )
-                        {
-                            gYNametable = 2;
-                            gYScroll = 0x0;
-                        }
-                        else
-                        {
-                            gYScroll += 1;
-                        }
-                    }
-                }
-                else
-                {
-                    if( nametable[(((gYScroll + gY+0x11) & 0xF8) << 2) + ((gX) >> 3)] == 0x6 &&
-                        nametable[(((gYScroll + gY+0x11) & 0xF8) << 2) + ((gX+0xF) >> 3)] == 0x6 )
-                    {
-                        gYScroll += 1;
-                    }
-                }
-            }
-        }
     }
     if(gController1 & C1_L)
     {
@@ -739,29 +617,28 @@ void update_sprites(void)
         //*((unsigned char*)0x4000) = 0xBF;
         
         // Play the music
-        pMusicPlay();
+        //pMusicPlay();
         
     }
     if(gController1 & C1_A)
     {
-        //raw period = 111860.8/frequency - 1
-        
-        // Make a sound
-        
-        // raw period
-        *((unsigned char*)0x4003) = 0x01;
-        *((unsigned char*)0x4002) = 0x17;
-        // duty cycle and volume
-        *((unsigned char*)0x4000) = 0xBF;
+        ////raw period = 111860.8/frequency - 1
+        //
+        //// Make a sound
+        //
+        //// raw period
+        //*((unsigned char*)0x4003) = 0x01;
+        //*((unsigned char*)0x4002) = 0x17;
+        //// duty cycle and volume
+        //*((unsigned char*)0x4000) = 0xBF;
+        gVelocity = 16;
+        gVelocityDirection = 1;
     }
     if(!((gController1 & C1_A) || (gController1 & C1_B)))
     {
         // Stop making the sound
         //*((unsigned char*)0x4000) = 0x30;
     }
-    
-    
-        
     
     *((unsigned char*)0x200) = gY;
     *((unsigned char*)0x203) = gX;
@@ -772,6 +649,178 @@ void update_sprites(void)
     *((unsigned char*)0x20C) = gY+8;
     *((unsigned char*)0x20F) = gX+8;
 }
+
+void do_physics(void)
+{
+    if( gVelocityDirection == 1 ) // moving up
+    {
+        for( i = 0; (i<<2) < gVelocity; i++ )
+        {
+            if( gYNametable == 2 )
+            {
+                if( nametable[0x3C0 + (((gY)&0xF8) << 2) + ((gX) >> 3)] == 0x6 &&
+                    nametable[0x3C0 + (((gY)&0xF8) << 2) + ((gX+0xF) >> 3)] == 0x6 )
+                {
+                    if(gY > 0x0F)
+                    {
+                        gY -= 1;
+                    }
+                    else
+                    {
+                        gYScroll = 0xEF;
+                        gYNametable = 0;
+                    }
+                }
+                else
+                {
+                    gVelocity = 0;
+                    gVelocityDirection = 0;
+                    break;
+                }
+            }
+            else if((gYScroll + gY) >= 0xF0 )
+            {
+                if( nametable[0x3C0 + (((gYScroll + gY - 0xF0)&0xF8) << 2) + ((gX) >> 3)] == 0x6 &&
+                    nametable[0x3C0 + (((gYScroll + gY - 0xF0)&0xF8) << 2) + ((gX+0xF) >> 3)] == 0x6 )
+                {
+                    if(gY > 0x0F)
+                    {
+                        gY -= 1;
+                    }
+                    else
+                    {
+                        gYScroll -= 1;
+                    }
+                }
+                else
+                {
+                    gVelocity = 0;
+                    gVelocityDirection = 0;
+                    break;
+                }
+            }
+            else
+            {
+                if( nametable[(((gYScroll + gY - 0x100) & 0xF8) << 2) + ((gX) >> 3)] == 0x6 &&
+                    nametable[(((gYScroll + gY - 0x100) & 0xF8) << 2) + ((gX+0xF) >> 3)] == 0x6 )
+                {
+                    if(gY > 0x0F)
+                    {
+                        gY -= 1;
+                    }
+                    else
+                    {
+                        if( gYScroll > 0 )
+                        {
+                            gYScroll -= 1;
+                        }
+                    }
+                }
+                else
+                {
+                    gVelocity = 0;
+                    gVelocityDirection = 0;
+                    break;
+                }
+            }
+        }
+        if( i == ((gVelocity+3)>>2) )
+        {
+            if( gVelocity == 0 )
+            {
+                gVelocityDirection = 0;
+            }
+            else
+            {
+                gVelocity -= 1;
+            }
+        }
+    }
+    else // moving down
+    {
+        for( i = 0; (i<<2) < gVelocity; i++ )
+        {
+            if(gYNametable == 2 )
+            {
+                if( nametable[0x3C0 + (((gY+0x11)&0xF8) << 2) + ((gX) >> 3)] == 0x6 &&
+                    nametable[0x3C0 + (((gY+0x11)&0xF8) << 2) + ((gX+0xF) >> 3)] == 0x6 )
+                {
+                    if(gY < 0xCF)
+                    {
+                        gY += 1;
+                    }
+                    else
+                    {
+                        gVelocity = 0;
+                        break;
+                    }
+                }
+                else
+                {
+                    gVelocity = 0;
+                    break;
+                }
+            }
+            else if((gYScroll + gY + 0x11) >= 0xF0)
+            {
+                if( nametable[0x3C0 + (((gYScroll + gY+0x11 - 0xF0)&0xF8) << 2) + ((gX) >> 3)] == 0x6 &&
+                    nametable[0x3C0 + (((gYScroll + gY+0x11 - 0xF0)&0xF8) << 2) + ((gX+0xF) >> 3)] == 0x6 )
+                {
+                    if(gY < 0xCF)
+                    {
+                        gY += 1;
+                    }
+                    else
+                    {
+                        if( gYScroll == 0xEF )
+                        {
+                            gYNametable = 2;
+                            gYScroll = 0;
+                            gVelocity = 0;
+                            break;
+                        }
+                        else
+                        {
+                            gYScroll+=1;
+                        }
+                    }
+                }
+                else
+                {
+                    gVelocity = 0;
+                    break;
+                }
+            }
+            else
+            {
+                if( nametable[(((gYScroll + gY+0x11)&0xF8) << 2) + ((gX) >> 3)] == 0x6 &&
+                    nametable[(((gYScroll + gY+0x11)&0xF8) << 2) + ((gX+0xF) >> 3)] == 0x6 )
+                {
+                    if(gY < 0xCF)
+                    {
+                        gY += 1;
+                    }
+                    else
+                    {
+                        gYScroll+=1;
+                    }
+                }
+                else
+                {
+                    gVelocity = 0;
+                    break;
+                }
+            }
+        }
+        
+        if( i == ((gVelocity+3)>>2) )
+        {
+            gVelocity+=1;
+        }
+    }
+}    
+        
+    
 
 void scroll_right(void)
 {
@@ -826,6 +875,7 @@ void main(void)
         
         scroll_right();
         
+        do_physics();
     }
 }
 
