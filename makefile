@@ -5,14 +5,17 @@ LD65 = ../../cc65/bin/ld65
 NAME = test
 
 
-$(NAME).nes: $(NAME).o main.o nes.cfg
-	$(LD65) -C nes.cfg -o $(NAME).nes $(NAME).o main.o nes.lib
+$(NAME).nes: $(NAME).o main.o asm4c.o nes.cfg
+	$(LD65) -C nes.cfg -o $(NAME).nes $(NAME).o main.o asm4c.o nes.lib
 
 	rm *.o
 	rm test.s
 
 main.o: main.asm
 	$(CA65) main.asm
+
+asm4c.o: asm4c.s
+	$(CA65) asm4c.s
 
 $(NAME).o: $(NAME).s
 	$(CA65) $(NAME).s

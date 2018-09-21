@@ -59,7 +59,7 @@ _music:
 _pMusicInit:
     jmp _music + $80 ;$8080
     rts
-    
+
 .export _pMusicPlay
 _pMusicPlay:
     lda #0
