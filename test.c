@@ -14,7 +14,7 @@
 #define PPU_DATA    *((unsigned char*)0x2007)
 
 #pragma bss-name (push, "OAM")
-unsigned char Sprites[256];
+unsigned char sprites[256];
 #pragma bss-name (pop)
 
 #pragma bss-name (push, "BSS")
@@ -147,13 +147,13 @@ void ppuinit(void)
     // |         |         010 = Intensify blue     |       than one type   |
     // |         |         100 = Intensify red   +--+                       |
     // |         |    D4: Sprite Visibility                                 |
-    // |         |           0 = Sprites not displayed                      |
-    // |         |           1 = Sprites visible                            |
+    // |         |           0 = sprites not displayed                      |
+    // |         |           1 = sprites visible                            |
     // |         |    D3: Background Visibility                             |
     // |         |           0 = Background not displayed                   |
     // |         |           1 = Background visible                         |
     // |         |    D2: Sprite Clipping                                   |
-    // |         |           0 = Sprites invisible in left 8-pixel column   |
+    // |         |           0 = sprites invisible in left 8-pixel column   |
     // |         |           1 = No clipping                                |
     // |         |    D1: Background Clipping                               |
     // |         |           0 = BG invisible in left 8-pixel column        |
@@ -292,14 +292,14 @@ void patterntables(void)
     //}
 }
 
-void sprites(void)
+void setup_sprites(void)
 {
     unsigned int i;
 
     // clear sprite ram
     for( i = 0; i < 256; i++ )
     {
-        *((unsigned char*)(0x200 + i)) = 0x00;
+        sprites[i] = 0x00;
     }
 
     // From NESDev:
@@ -320,25 +320,25 @@ void sprites(void)
     //|  3   | XXXXXXXX | X Coordinate (upper-left corner)     |
     //+------+----------+--------------------------------------+}
 
-    *((unsigned char*)0x200) = 0x50;
-    *((unsigned char*)0x201) = 0x00;
-    *((unsigned char*)0x202) = 0x00;
-    *((unsigned char*)0x203) = 0x50;
+    sprites[0] = 0x50;
+    sprites[1] = 0x00;
+    sprites[2] = 0x00;
+    sprites[3] = 0x50;
 
-    *((unsigned char*)0x204) = 0x50;
-    *((unsigned char*)0x205) = 0x01;
-    *((unsigned char*)0x206) = 0x00;
-    *((unsigned char*)0x207) = 0x58;
+    sprites[4] = 0x50;
+    sprites[5] = 0x01;
+    sprites[6] = 0x00;
+    sprites[7] = 0x58;
 
-    *((unsigned char*)0x208) = 0x58;
-    *((unsigned char*)0x209) = 0x02;
-    *((unsigned char*)0x20A) = 0x00;
-    *((unsigned char*)0x20B) = 0x50;
+    sprites[8] = 0x58;
+    sprites[9] = 0x02;
+    sprites[10] = 0x00;
+    sprites[11] = 0x50;
 
-    *((unsigned char*)0x20C) = 0x58;
-    *((unsigned char*)0x20D) = 0x03;
-    *((unsigned char*)0x20E) = 0x00;
-    *((unsigned char*)0x20F) = 0x58;
+    sprites[12] = 0x58;
+    sprites[13] = 0x03;
+    sprites[14] = 0x00;
+    sprites[15] = 0x58;
 
     gX = 0x40;
     gY = 0x50;
@@ -348,15 +348,15 @@ void sprites(void)
     gYScroll = 0;
     gYNametable = 2;
 
-    *((unsigned char*)0x210) = 0x30;
-    *((unsigned char*)0x211) = 0x04;
-    *((unsigned char*)0x212) = 0x01;
-    *((unsigned char*)0x213) = 0x50;
+    sprites[16] = 0x30;
+    sprites[17] = 0x04;
+    sprites[18] = 0x01;
+    sprites[19] = 0x50;
 
-    *((unsigned char*)0x214) = 0x30;
-    *((unsigned char*)0x215) = 0x05;
-    *((unsigned char*)0x216) = 0x01;
-    *((unsigned char*)0x217) = 0x58;
+    sprites[20] = 0x30;
+    sprites[21] = 0x05;
+    sprites[22] = 0x01;
+    sprites[23] = 0x58;
 }
 
 void dma_sprites(void)
@@ -508,52 +508,56 @@ void update_sprites(void)
         //*((unsigned char*)0x4000) = 0x30;
     }
 
-    *((unsigned char*)0x200) = gY;
-    *((unsigned char*)0x203) = gX;
-    *((unsigned char*)0x204) = gY;
-    *((unsigned char*)0x207) = gX+8;
-    *((unsigned char*)0x208) = gY+8;
-    *((unsigned char*)0x20B) = gX;
-    *((unsigned char*)0x20C) = gY+8;
-    *((unsigned char*)0x20F) = gX+8;
+    sprites[0] = gY;
+    sprites[3] = gX;
+    sprites[4] = gY;
+    sprites[7] = gX+8;
+    sprites[8] = gY+8;
+    sprites[11] = gX;
+    sprites[12] = gY+8;
+    sprites[15] = gX+8;
 }
 
 void do_physics(void)
 {
-    if( *((unsigned char*)0x210) != gY )
+    // 0-15 Frog 4 sprites
+    // 16-23 Bird
+    if( sprites[16] != gY )
     {
-        if( *((unsigned char*)0x210) < gY )
+        if( sprites[16] < gY )
         {
-            *((unsigned char*)0x210) += 1;
-            *((unsigned char*)0x214) += 1;
+            sprites[16] += 1;
+            sprites[20] += 1;
         }
         else
         {
-            *((unsigned char*)0x210) -= 1;
-            *((unsigned char*)0x214) -= 1;
+            sprites[16] -= 1;
+            sprites[20] -= 1;
         }
     }
-    if( *((unsigned char*)0x213) != gX )
+    if( sprites[19] != gX )
     {
-        if( *((unsigned char*)0x213) < gX )
+        if( sprites[19] < gX )
         {
-            *((unsigned char*)0x213) += 1;
-            *((unsigned char*)0x217) += 1;
-
-            *((unsigned char*)0x211) = 0x05;
-            *((unsigned char*)0x212) = 0x41;
-            *((unsigned char*)0x215) = 0x04;
-            *((unsigned char*)0x216) = 0x41;
+            // X
+            sprites[19] += 1;
+            sprites[23] += 1;
+            // Tiles
+            sprites[21] = 0x04;
+            sprites[22] = 0x41;
+            sprites[17] = 0x05;
+            sprites[18] = 0x41;
         }
         else
         {
-            *((unsigned char*)0x213) -= 1;
-            *((unsigned char*)0x217) -= 1;
-
-            *((unsigned char*)0x211) = 0x04;
-            *((unsigned char*)0x212) = 0x01;
-            *((unsigned char*)0x215) = 0x05;
-            *((unsigned char*)0x216) = 0x01;
+            // X
+            sprites[19] -= 1;
+            sprites[23] -= 1;
+            // Tiles
+            sprites[21] = 0x05;
+            sprites[22] = 0x01;
+            sprites[17] = 0x04;
+            sprites[18] = 0x01;
         }
     }
 
@@ -772,7 +776,7 @@ void main(void)
   	UnRLE(Level1Bottom);	// uncompresses our data
 
     vblank();
-    sprites();
+    setup_sprites();
 
     apuinit();
 
