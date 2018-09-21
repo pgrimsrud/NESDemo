@@ -20,6 +20,7 @@ unsigned char Sprites[256];
 #pragma bss-name (push, "BSS")
 
 static unsigned char gController1;
+static unsigned char gPrevController1;
 static unsigned char gX;
 static unsigned char gY;
 static unsigned long gXScroll;
@@ -27,6 +28,7 @@ static unsigned char gYScroll;
 static unsigned char gYNametable;
 static unsigned char devnull;
 static unsigned int  i;
+static unsigned int  gJumping; // 0 if not currently in the air from a jump, 1 if yes
 static unsigned int  gVelocity;
 static unsigned int  gVelocityDirection;
 //static unsigned int  j;
@@ -369,6 +371,7 @@ void input_poll(void)
     *((unsigned char*)0x4016) |= 0x01;
     *((unsigned char*)0x4016) &= 0xFE;
 
+    gPrevController1 = gController1;
     gController1 = 0x00;
 
      if(*((unsigned char*)0x4016) & 0x01)
@@ -490,19 +493,14 @@ void update_sprites(void)
     {
       // Currently does nothing
     }
-    if(gController1 & BUTTON_A)
+    // Only if new press (else you could just hold jump to jump over and over)
+    if(((gController1 & BUTTON_A) > 0) && ((gPrevController1 & BUTTON_A) == 0))
     {
-        ////raw period = 111860.8/frequency - 1
-        //
-        //// Make a sound
-        //
-        //// raw period
-        //*((unsigned char*)0x4003) = 0x01;
-        //*((unsigned char*)0x4002) = 0x17;
-        //// duty cycle and volume
-        //*((unsigned char*)0x4000) = 0xBF;
-        gVelocity = 16;
-        gVelocityDirection = 1;
+        if(gJumping == 0) {
+          gJumping = 1;
+          gVelocity = 16;
+          gVelocityDirection = 1;
+        }
     }
     if(!((gController1 & BUTTON_A) || (gController1 & BUTTON_B)))
     {
@@ -583,6 +581,7 @@ void do_physics(void)
                 {
                     gVelocity = 0;
                     gVelocityDirection = 0;
+                    gJumping = 0;
                     break;
                 }
             }
@@ -604,6 +603,7 @@ void do_physics(void)
                 {
                     gVelocity = 0;
                     gVelocityDirection = 0;
+                    gJumping = 0;
                     break;
                 }
             }
@@ -628,6 +628,7 @@ void do_physics(void)
                 {
                     gVelocity = 0;
                     gVelocityDirection = 0;
+                    gJumping = 0;
                     break;
                 }
             }
@@ -660,12 +661,14 @@ void do_physics(void)
                     else
                     {
                         gVelocity = 0;
+                        gJumping = 0;
                         break;
                     }
                 }
                 else
                 {
                     gVelocity = 0;
+                    gJumping = 0;
                     break;
                 }
             }
@@ -685,6 +688,7 @@ void do_physics(void)
                             gYNametable = 2;
                             gYScroll = 0;
                             gVelocity = 0;
+                            gJumping = 0;
                             break;
                         }
                         else
@@ -696,6 +700,7 @@ void do_physics(void)
                 else
                 {
                     gVelocity = 0;
+                    gJumping = 0;
                     break;
                 }
             }
@@ -716,6 +721,7 @@ void do_physics(void)
                 else
                 {
                     gVelocity = 0;
+                    gJumping = 0;
                     break;
                 }
             }
