@@ -419,6 +419,18 @@ void update_sprites(void)
     }
     if(gController1 & BUTTON_LEFT)
     {
+        //TODO better checks to verify direction changed
+        if((gPrevController1 & BUTTON_LEFT) == 0) {
+          sprites[1] = 0x01;
+          sprites[2] = 0x40;
+          sprites[5] = 0x00;
+          sprites[6] = 0x40;
+          sprites[9] = 0x03;
+          sprites[10] = 0x40;
+          sprites[13] = 0x02;
+          sprites[14] = 0x40;
+        }
+
         if(gX > 0x08)
         {
 
@@ -457,6 +469,18 @@ void update_sprites(void)
     }
     if(gController1 & BUTTON_RIGHT)
     {
+        //TODO better checks to verify direction changed
+        if((gPrevController1 & BUTTON_RIGHT) == 0) {
+          sprites[1] = 0x00;
+          sprites[2] = 0x00;
+          sprites[5] = 0x01;
+          sprites[6] = 0x00;
+          sprites[9] = 0x02;
+          sprites[10] = 0x00;
+          sprites[13] = 0x03;
+          sprites[14] = 0x00;
+        }
+
         if(gX < 0xE8)
         {
             if( gYNametable == 2 )
