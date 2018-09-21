@@ -585,7 +585,6 @@ void do_physics(void)
                 {
                     gVelocity = 0;
                     gVelocityDirection = 0;
-                    gJumping = 0;
                     break;
                 }
             }
@@ -605,7 +604,6 @@ void do_physics(void)
                 }
                 else
                 {
-                    gVelocity = 0;
                     gVelocityDirection = 0;
                     gJumping = 0;
                     break;
@@ -632,7 +630,6 @@ void do_physics(void)
                 {
                     gVelocity = 0;
                     gVelocityDirection = 0;
-                    gJumping = 0;
                     break;
                 }
             }
