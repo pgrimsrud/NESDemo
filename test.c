@@ -21,6 +21,7 @@ unsigned char sprites[256];
 
 static unsigned char gController1;
 static unsigned char gPrevController1;
+static unsigned char gPrevController1Change;
 static unsigned char gX;
 static unsigned char gY;
 static unsigned long gXScroll;
@@ -29,11 +30,11 @@ static unsigned char gYNametable;
 static unsigned char devnull;
 static unsigned int  i;
 static unsigned int  gJumping; // 0 if not currently in the air from a jump, 1 if yes
+static unsigned int  gBounceCounter;
 static unsigned int  gVelocity;
 static unsigned int  gVelocityDirection;
-//static unsigned int  j;
-//static unsigned long offset;
-static unsigned char ppu_row;
+static unsigned int  gSpeed;
+static unsigned int  gSpeedDirection;
 
 extern void pMusicInit(unsigned char);
 extern void pMusicPlay(void);
@@ -344,9 +345,14 @@ void setup_sprites(void)
     gY = 0x50;
     gVelocity = 0;
     gVelocityDirection = 0;
+    gSpeed = 0;
+    gSpeedDirection = 1;
     gXScroll = 0;
     gYScroll = 0;
     gYNametable = 2;
+    gJumping = 1;
+    gBounceCounter = 0;
+    
 
     sprites[16] = 0x30;
     sprites[17] = 0x04;
@@ -407,6 +413,29 @@ void input_poll(void)
          gController1 |= BUTTON_RIGHT;
      }
 
+     if( gController1 != gPrevController1 )
+     {
+         gPrevController1Change = gPrevController1;
+     }
+}
+
+void small_jump(void)
+{
+    if(gJumping == 0) {
+      gJumping = 1;
+      gVelocity = 6;
+      gVelocityDirection = 1;
+    }
+}
+
+void big_jump(void)
+{
+    if(gJumping == 0) {
+      gJumping = 1;
+      gVelocity = 16;
+      gVelocityDirection = 1;
+      gPrevController1Change |= BUTTON_A;
+    }
 }
 
 void update_sprites(void)
@@ -419,112 +448,79 @@ void update_sprites(void)
     }
     if(gController1 & BUTTON_LEFT)
     {
-        //TODO better checks to verify direction changed
-        if((gPrevController1 & BUTTON_LEFT) == 0) {
-          sprites[1] = 0x01;
-          sprites[2] = 0x40;
-          sprites[5] = 0x00;
-          sprites[6] = 0x40;
-          sprites[9] = 0x03;
-          sprites[10] = 0x40;
-          sprites[13] = 0x02;
-          sprites[14] = 0x40;
-        }
-
-        if(gX > 0x08)
+        if( gSpeedDirection == 0 )
         {
-
-            if( gYNametable == 2 )
+            if( gSpeed < 12 )
             {
-              //x = gX >> 4;
-              //y = gY >> 4
-              //index[y*16 + x]
-                if( collision[240 + (((gY+1)&0xF0)) + ((gX-1) >> 4)] == 0 &&
-                    collision[240 + (((gY+0x10)&0xF0)) + ((gX-1) >> 4)] == 0 )
-                {
-                    gX -= 1;
-                }
+                ++gSpeed;
+            }
+        }
+        else
+        {
+            if( gSpeed == 0 )
+            {
+                gSpeed = 1;
+                gSpeedDirection = 0;
+        
+                sprites[1] = 0x01;
+                sprites[2] = 0x40;
+                sprites[5] = 0x00;
+                sprites[6] = 0x40;
+                sprites[9] = 0x03;
+                sprites[10] = 0x40;
+                sprites[13] = 0x02;
+                sprites[14] = 0x40;
             }
             else
             {
-                if((gYScroll + gY + 1) >= 0xF0)
-                {
-                    if( collision[240 + (((gYScroll + gY + 1 - 0xF0) & 0xF0) ) + ((gX-1) >> 4)] == 0 &&
-                        collision[240 + (((gYScroll + gY + 0x10 - 0xF0) & 0xF0) ) + ((gX-1) >> 4)] == 0 )
-                    {
-                        gX -= 1;
-                    }
-                }
-                else
-                {
-                    if( collision[(((gYScroll + gY + 1) & 0xF0) ) + ((gX-1) >> 4)] == 0 &&
-                        collision[(((gYScroll + gY + 0x10) & 0xF0) ) + ((gX-1) >> 4)] == 0 )
-                    {
-                        gX -= 1;
-                    }
-                }
+                --gSpeed;
             }
-            //gX -= 1;
         }
+        
     }
     if(gController1 & BUTTON_RIGHT)
     {
-        //TODO better checks to verify direction changed
-        if((gPrevController1 & BUTTON_RIGHT) == 0) {
-          sprites[1] = 0x00;
-          sprites[2] = 0x00;
-          sprites[5] = 0x01;
-          sprites[6] = 0x00;
-          sprites[9] = 0x02;
-          sprites[10] = 0x00;
-          sprites[13] = 0x03;
-          sprites[14] = 0x00;
-        }
-
-        if(gX < 0xE8)
+        if( gSpeedDirection == 1 )
         {
-            if( gYNametable == 2 )
+            if( gSpeed < 12 )
             {
-                if( collision[240 + (((gY+1)&0xF0) ) + ((gX+0x10) >> 4)] == 0 &&
-                    collision[240 + (((gY+0x10)&0xF0) ) + ((gX+0x10) >> 4)] == 0 )
-                {
-                    gX += 1;
-                }
+                ++gSpeed;
+            }
+        }
+        else
+        {
+            if( gSpeed == 0 )
+            {
+                gSpeed = 1;
+                gSpeedDirection = 1;
+        
+                sprites[1] = 0x00;
+                sprites[2] = 0x00;
+                sprites[5] = 0x01;
+                sprites[6] = 0x00;
+                sprites[9] = 0x02;
+                sprites[10] = 0x00;
+                sprites[13] = 0x03;
+                sprites[14] = 0x00;
             }
             else
             {
-                if((gYScroll + gY + 1) >= 0xF0)
-                {
-                    if( collision[240 + (((gYScroll + gY + 1 - 0xF0) & 0xF0) ) + ((gX+0x10) >> 4)] == 0 &&
-                        collision[240 + (((gYScroll + gY + 0x10 - 0xF0) & 0xF0) ) + ((gX+0x10) >> 4)] == 0 )
-                    {
-                        gX += 1;
-                    }
-                }
-                else
-                {
-                    if( collision[(((gYScroll + gY + 1) & 0xF0) ) + ((gX+0x10) >> 4)] == 0 &&
-                        collision[(((gYScroll + gY + 0x10) & 0xF0) ) + ((gX+0x10) >> 4)] == 0 )
-                    {
-                        gX += 1;
-                    }
-                }
+                --gSpeed;
             }
-            //gX += 1;
         }
+    }
+    if( ((gController1 & (BUTTON_RIGHT | BUTTON_LEFT)) == 0) && (gSpeed > 0) )
+    {
+        --gSpeed;
     }
     if(gController1 & BUTTON_B)
     {
       // Currently does nothing
     }
     // Only if new press (else you could just hold jump to jump over and over)
-    if(((gController1 & BUTTON_A) > 0) && ((gPrevController1 & BUTTON_A) == 0))
+    if(((gController1 & BUTTON_A) > 0) && ((gPrevController1Change & BUTTON_A) == 0))
     {
-        if(gJumping == 0) {
-          gJumping = 1;
-          gVelocity = 16;
-          gVelocityDirection = 1;
-        }
+        big_jump();
     }
     if(!((gController1 & BUTTON_A) || (gController1 & BUTTON_B)))
     {
@@ -586,6 +582,145 @@ void do_physics(void)
     }
 
 
+    //
+    // Horizontal Movement
+    //
+
+    if( gSpeedDirection == 0 )
+    {
+        ////TODO better checks to verify direction changed
+        //if((gPrevController1 & BUTTON_LEFT) == 0) {
+        //  sprites[1] = 0x01;
+        //  sprites[2] = 0x40;
+        //  sprites[5] = 0x00;
+        //  sprites[6] = 0x40;
+        //  sprites[9] = 0x03;
+        //  sprites[10] = 0x40;
+        //  sprites[13] = 0x02;
+        //  sprites[14] = 0x40;
+        //}
+
+        for( i = 0; (i<<2) < gSpeed; i++ )
+        {
+            if(gX > 0x08)
+            {
+    
+                if( gYNametable == 2 )
+                {
+                  //x = gX >> 4;
+                  //y = gY >> 4
+                  //index[y*16 + x]
+                    if( collision[240 + (((gY+1)&0xF0)) + ((gX-1) >> 4)] == 0 &&
+                        collision[240 + (((gY+0x10)&0xF0)) + ((gX-1) >> 4)] == 0 )
+                    {
+                        gX -= 1;
+                        small_jump();
+                    }
+                    else
+                    {
+                        gSpeed = 0;
+                    }
+                }
+                else
+                {
+                    if((gYScroll + gY + 1) >= 0xF0)
+                    {
+                        if( collision[240 + (((gYScroll + gY + 1 - 0xF0) & 0xF0) ) + ((gX-1) >> 4)] == 0 &&
+                            collision[240 + (((gYScroll + gY + 0x10 - 0xF0) & 0xF0) ) + ((gX-1) >> 4)] == 0 )
+                        {
+                            gX -= 1;
+                            small_jump();
+                        }
+                        else
+                        {
+                            gSpeed = 0;
+                        }
+                    }
+                    else
+                    {
+                        if( collision[(((gYScroll + gY + 1) & 0xF0) ) + ((gX-1) >> 4)] == 0 &&
+                            collision[(((gYScroll + gY + 0x10) & 0xF0) ) + ((gX-1) >> 4)] == 0 )
+                        {
+                            gX -= 1;
+                            small_jump();
+                        }
+                        else
+                        {
+                            gSpeed = 0;
+                        }
+                    }
+                }
+            }
+        }
+    }
+    else
+    {
+        ////TODO better checks to verify direction changed
+        //if((gPrevController1 & BUTTON_RIGHT) == 0) {
+        //  sprites[1] = 0x00;
+        //  sprites[2] = 0x00;
+        //  sprites[5] = 0x01;
+        //  sprites[6] = 0x00;
+        //  sprites[9] = 0x02;
+        //  sprites[10] = 0x00;
+        //  sprites[13] = 0x03;
+        //  sprites[14] = 0x00;
+        //}
+
+        for( i = 0; (i<<2) < gSpeed; i++ )
+        {
+            if(gX < 0xE8)
+            {
+                if( gYNametable == 2 )
+                {
+                    if( collision[240 + (((gY+1)&0xF0) ) + ((gX+0x10) >> 4)] == 0 &&
+                        collision[240 + (((gY+0x10)&0xF0) ) + ((gX+0x10) >> 4)] == 0 )
+                    {
+                        gX += 1;
+                        small_jump();
+                    }
+                    else
+                    {
+                        gSpeed = 0;
+                    }
+                }
+                else
+                {
+                    if((gYScroll + gY + 1) >= 0xF0)
+                    {
+                        if( collision[240 + (((gYScroll + gY + 1 - 0xF0) & 0xF0) ) + ((gX+0x10) >> 4)] == 0 &&
+                            collision[240 + (((gYScroll + gY + 0x10 - 0xF0) & 0xF0) ) + ((gX+0x10) >> 4)] == 0 )
+                        {
+                            gX += 1;
+                            small_jump();
+                        }
+                        else
+                        {
+                            gSpeed = 0;
+                        }
+                    }
+                    else
+                    {
+                        if( collision[(((gYScroll + gY + 1) & 0xF0) ) + ((gX+0x10) >> 4)] == 0 &&
+                            collision[(((gYScroll + gY + 0x10) & 0xF0) ) + ((gX+0x10) >> 4)] == 0 )
+                        {
+                            gX += 1;
+                            small_jump();
+                        }
+                        else
+                        {
+                            gSpeed = 0;
+                        }
+                    }
+                }
+            }
+        }
+    }
+    
+    //
+    // Vertical Movement
+    //
+    
     if( gVelocityDirection == 1 ) // moving up
     {
         for( i = 0; (i<<2) < gVelocity; i++ )
@@ -682,6 +817,7 @@ void do_physics(void)
                     if(gY < 0xCF)
                     {
                         gY += 1;
+                        gJumping = 1;
                     }
                     else
                     {
@@ -705,6 +841,7 @@ void do_physics(void)
                     if(gY < 0xCF)
                     {
                         gY += 1;
+                        gJumping = 1;
                     }
                     else
                     {
@@ -719,6 +856,7 @@ void do_physics(void)
                         else
                         {
                             gYScroll+=1;
+                            gJumping = 1;
                         }
                     }
                 }
@@ -742,6 +880,7 @@ void do_physics(void)
                     {
                         gYScroll+=1;
                     }
+                    gJumping = 1;
                 }
                 else
                 {
