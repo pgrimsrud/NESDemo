@@ -413,7 +413,8 @@ void input_poll(void)
          gController1 |= BUTTON_RIGHT;
      }
 
-     if( gController1 != gPrevController1 )
+     if( ((gController1 & BUTTON_A) == BUTTON_A && (gPrevController1 & BUTTON_A) == 0) ||
+         ((gController1 & BUTTON_A) == 0 && (gPrevController1 & BUTTON_A) == BUTTON_A))
      {
          gPrevController1Change = gPrevController1;
      }
