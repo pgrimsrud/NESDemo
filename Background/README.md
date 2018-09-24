@@ -5,4 +5,5 @@ This is using Nes Screen Tool which:
 
 To Edit, open the .nam file in the tool. You need to save both the nam (so you can reopen it later) and the .h file (save as RLE Packed as C header) for actual use. Be sure to save nametable AND attributes.
 
-TODO script to output collision based on the map and storing it outside of code as well
+To generate collision map, save the file as a NON RLE .h file in the format "Level<#><side>Collision.h" where '<#>' is the level number and '<side>' is Top or Bottom. Run the scrypt with "python parseCollision.py <#>" and it'll parse the top and bottom and spit out the collision map
+
